@@ -1,0 +1,958 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Management</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="img/logo (2).png" type="image/png">
+  </head>
+  <body>
+    <!-- Notification Container -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Login Page -->
+    <div id="loginPage" class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo-container">
+            <img src="img/logo (2).png" alt="Site Management Logo" class="logo-img">
+          </div>
+          <h1 class="auth-title">Site Management</h1>
+          <p class="auth-subtitle">Sign in to access your account</p>
+        </div>
+        <form id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label for="loginUsername" class="form-label">Username</label>
+            <input type="text" id="loginUsername" name="username" class="form-input" placeholder="Enter your username" required>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" id="loginPassword" name="password" class="form-input" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="auth-btn" id="loginBtn">
+            <span id="loginBtnText">Sign In</span>
+          </button>
+        </form>
+        <div class="auth-footer">
+          <p>Don't have an account? <a href="#" class="auth-link" onclick="showPage('registerPage')">Register as user</a></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Registration Page -->
+    <div id="registerPage" class="auth-container" style="display: none;">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo-container">
+            <img src="img/logo (2).png" alt="Site Management Logo" class="logo-img">
+          </div>
+          <h1 class="auth-title">User Registration</h1>
+          <p class="auth-subtitle">Create your user account</p>
+        </div>
+        <form id="registerForm" class="auth-form">
+          <div class="form-group">
+            <label for="registerUsername" class="form-label">Username</label>
+            <input type="text" id="registerUsername" name="username" class="form-input" placeholder="Choose a username" required>
+          </div>
+          <div class="form-group">
+            <label for="registerPassword" class="form-label">Password</label>
+            <input type="password" id="registerPassword" name="password" class="form-input" placeholder="Enter your password" required oninput="checkPasswordStrength(this.value)">
+            <div id="passwordStrength" class="password-strength"></div>
+            <div id="passwordFeedback" class="password-feedback"></div>
+          </div>
+          <div class="form-group">
+            <label for="registerConfirm" class="form-label">Confirm Password</label>
+            <input type="password" id="registerConfirm" name="confirm" class="form-input" placeholder="Confirm your password" required>
+          </div>
+          <button type="submit" class="auth-btn" id="registerBtn">
+            <span id="registerBtnText">Register</span>
+          </button>
+        </form>
+        <div class="auth-footer">
+          <p>Already have an account? <a href="#" class="auth-link" onclick="showPage('loginPage')">Sign In</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" style="display: none;">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-container">
+          <div class="app-logo">
+            <img src="img/logo (2).png" alt="Site Management Logo" class="logo-img">
+            <span class="logo-text">Site Management</span>
+          </div>
+          <div class="user-menu">
+            <span id="userRoleBadge" class="role-badge">Admin</span>
+            <button class="logout-btn" onclick="logout()">
+              <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </button>
+            <div id="userAvatar" class="user-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="search-container">
+            <div class="search-box">
+              <input type="text" id="searchInput" class="search-input" placeholder="Search sites...">
+              <button id="searchBtn" class="search-btn">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+            <button id="addSiteBtn" class="add-site-btn">
+              <i class="fas fa-plus"></i> Add New Site
+            </button>
+          </div>
+
+          <div class="sites-list-container">
+            <button id="exportExcelBtn" class="btn btn-primary">
+              <i class="fas fa-file-excel"></i> Export to Excel
+            </button> <br>
+            <div id="sitesList" class="sites-list">
+              <!-- Sites will be loaded dynamically -->
+            </div>
+            <div class="pagination-controls">
+              <button id="prevPageBtn" class="pagination-btn" disabled>
+                <i class="fas fa-chevron-left"></i> Prev
+              </button>
+              <span id="pageInfo" class="page-info">Page 1 of 1</span>
+              <button id="nextPageBtn" class="pagination-btn" disabled>
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map and Details -->
+        <div class="map-container">
+          <div id="map">
+            <div class="map-controls">
+              <button class="map-control-btn active" data-map-type="street">Street</button>
+              <button class="map-control-btn" data-map-type="satellite">Satellite</button>
+              <button class="map-control-btn" data-map-type="terrain">Terrain</button>
+            </div>
+          </div>
+          <div class="site-details">
+            <div class="details-header">
+              <h2 id="detailSiteName" class="details-title">Select a site</h2>
+              <span id="detailSiteId" class="details-id">ID: -</span>
+              <div class="details-actions">
+                <button id="editSiteBtn" class="action small edit-btn" title="Edit site" style="display:none;">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button id="deleteSiteBtn" class="action small delete-btn" title="Delete site" style="display:none;">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+            <div id="noSiteSelected" class="no-selection">
+              <i class="fas fa-info-circle" style="font-size: 32px; margin-bottom: 16px; color: var(--primary-blue);"></i>
+              <p>No site selected. Select a site from the list or <button id="quickAddBtn" class="link-like" onclick="openModal()">add a new site</button>.</p>
+            </div>
+
+            <div id="detailSiteContent" class="details-content" style="display:none;">
+              <div class="detail-group">
+                <div class="detail-label">Address</div>
+                <div id="detailSiteAddress" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Status</div>
+                <div id="detailSiteStatus" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Height</div>
+                <div id="detailSiteHeight" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Uptime</div>
+                <div id="detailSiteUptime" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Coordinates</div>
+                <div id="detailSiteCoords" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Power Sources</div>
+                <div id="detailSitePowerSources" class="detail-value">-</div>
+                <div id="detailPowerDetails" class="power-source-details-content" style="margin-top: 8px;">
+                  <!-- Power source details will be added dynamically -->
+                </div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Capacity</div>
+                <div id="detailSiteCapacity" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Installation Date</div>
+                <div id="detailSiteInstallationDate" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Last Maintenance</div>
+                <div id="detailSiteLastMaintenance" class="detail-value">-</div>
+              </div>
+              <div class="detail-group">
+                <div class="detail-label">Technician</div>
+                <div id="detailSiteTechnician" class="detail-value">
+                  <span id="detailTechName"></span>
+                  <span id="detailTechPhone"></span>
+                </div>
+              </div>
+              <div class="detail-group" style="grid-column: span 2;">
+                <div class="detail-label">Tags</div>
+                <div id="detailSiteTags" class="site-tags">
+                  <!-- Tags will be added dynamically -->
+                </div>
+              </div>
+              <div class="detail-group" style="grid-column: span 2;">
+                <div class="detail-label">Notes</div>
+                <div id="detailSiteNotes" class="detail-value" style="font-weight: normal;">
+                  -
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer>
+        <div class="footer-content">
+          <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Services</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+          </div>
+          <p class="copyright">
+            ©2025 Ethio Telecom Tower Management System. All rights reserved. Developed by 
+            <a href="https://abdumalik-xi.vercel.app/" class="developer-link">Malik Dev</a>
+          </p>
+        </div>
+      </footer> 
+    </div>
+
+    <!-- Add Site Modal -->
+    <div id="addSiteModal" class="modal-overlay" style="display:none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Register New Site</h3>
+          <button id="addModalClose" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="siteForm" class="modal-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="siteName" class="form-label">Site Name</label>
+                <input type="text" id="siteName" name="name" class="form-input" placeholder="Enter site name" required>
+              </div>
+              <div class="form-group">
+                <label for="siteId" class="form-label">Site ID</label>
+                <input type="number" id="siteId" name="id" class="form-input" placeholder="Enter site ID" min="1" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="siteAddress" class="form-label">Address</label>
+              <input type="text" id="siteAddress" name="address" class="form-input" placeholder="Enter site address" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="siteLat" class="form-label">Latitude</label>
+                <input type="number" step="0.000001" id="siteLat" name="location.lat" class="form-input" placeholder="e.g., 9.0054" required>
+              </div>
+              <div class="form-group">
+                <label for="siteLng" class="form-label">Longitude</label>
+                <input type="number" step="0.000001" id="siteLng" name="location.lng" class="form-input" placeholder="e.g., 38.7636" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="siteStatus" class="form-label">Status</label>
+                <select id="siteStatus" name="status" class="form-input" required>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="siteHeight" class="form-label">Height (m)</label>
+                <input type="number" id="siteHeight" name="height" class="form-input" placeholder="Enter height in meters" min="0" step="0.1" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Power Sources</label>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Grid"> Grid
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Generator"> Generator
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Battery"> Battery
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Solar"> Solar
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Other"> Other
+                </label>
+              </div>
+            </div>
+
+            <!-- Grid Details -->
+            <div id="gridDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Grid Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="gridConnectionType">Connection Type</label>
+                  <select id="gridConnectionType" name="powerSourceDetails.grid.connectionType" class="form-input">
+                    <option value="">Select Connection Type</option>
+                    <option value="single_phase">Single-phase</option>
+                    <option value="three_phase">Three-phase</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="gridVoltage">Voltage (V)</label>
+                  <input type="number" id="gridVoltage" name="powerSourceDetails.grid.voltage" class="form-input" placeholder="e.g., 400" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="gridLoad">Load (kW)</label>
+                  <input type="number" id="gridLoad" name="powerSourceDetails.grid.load" class="form-input" placeholder="e.g., 50" min="0" step="0.1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Generator Details -->
+            <div id="generatorDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Generator Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="generatorType">Type</label>
+                  <select id="generatorType" name="powerSourceDetails.generator.type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="perkins">Perkins</option>
+                    <option value="cummins">Cummins</option>
+                    <option value="cat">CAT</option>
+                    <option value="fgt">FGT</option>
+                    <option value="doosan">Doosan</option>
+                    <option value="mtu">MTU</option>
+                    <option value="volvo">Volvo</option>
+                    <option value="john_deere">John Deere</option>
+                    <option value="yanmar">Yanmar</option>
+                    <option value="kirloskar">Kirloskar</option>
+                    <option value="mitsubishi">Mitsubishi</option>
+                    <option value="honda">Honda</option>
+                    <option value="kohler">Kohler</option>
+                    <option value="mecc_alte">Mecc Alte</option>
+                    <option value="premec">Premec</option>
+                    <option value="niroc">Niroc</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="generatorCapacity">Capacity (kVA)</label>
+                  <input type="number" id="generatorCapacity" name="powerSourceDetails.generator.capacity" class="form-input" placeholder="e.g., 100" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="generatorLoad">Load (kW)</label>
+                  <input type="number" id="generatorLoad" name="powerSourceDetails.generator.load" class="form-input" placeholder="e.g., 80" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="generatorAutonomy">Autonomy (hours)</label>
+                  <input type="number" id="generatorAutonomy" name="powerSourceDetails.generator.autonomy" class="form-input" placeholder="e.g., 24" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="generatorFuelTank">Fuel Tank (litres)</label>
+                  <input type="number" id="generatorFuelTank" name="powerSourceDetails.generator.fuelTank" class="form-input" placeholder="e.g., 500" min="0" step="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Battery Details -->
+            <div id="batteryDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Battery Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="batteryType">Type</label>
+                  <select id="batteryType" name="powerSourceDetails.battery.type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="li_ion">Lithium-Ion</option>
+                    <option value="lead_acid">Lead-Acid</option>
+                    <option value="flow">Flow</option>
+                    <option value="lithium_iron">Lithium-Iron</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="batteryCapacity">Capacity (kWh)</label>
+                  <input type="number" id="batteryCapacity" name="powerSourceDetails.battery.capacity" class="form-input" placeholder="e.g., 50" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="batteryVoltage">Voltage (V)</label>
+                  <input type="number" id="batteryVoltage" name="powerSourceDetails.battery.voltage" class="form-input" placeholder="e.g., 48" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="batteryDepth">Depth of Discharge (%)</label>
+                  <input type="number" id="batteryDepth" name="powerSourceDetails.battery.depth" class="form-input" placeholder="e.g., 80" min="0" max="100" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="batteryQuantity">Quantity (packs)</label>
+                  <input type="number" id="batteryQuantity" name="powerSourceDetails.battery.quantity" class="form-input" placeholder="e.g., 2" min="1" step="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Solar Details -->
+            <div id="solarDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Solar Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="solarType">Type</label>
+                  <select id="solarType" name="powerSourceDetails.solar.type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="mono">Monocrystalline</option>
+                    <option value="poly">Polycrystalline</option>
+                    <option value="thin">Thin-Film</option>
+                    <option value="bifacial">Bifacial</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="solarCapacity">Capacity (kW)</label>
+                  <input type="number" id="solarCapacity" name="powerSourceDetails.solar.capacity" class="form-input" placeholder="e.g., 10" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="solarTilt">Tilt (degrees)</label>
+                  <input type="number" id="solarTilt" name="powerSourceDetails.solar.tilt" class="form-input" placeholder="e.g., 30" min="0" max="90" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="solarInverterSize">Inverter Size (kW)</label>
+                  <input type="number" id="solarInverterSize" name="powerSourceDetails.solar.inverterSize" class="form-input" placeholder="e.g., 8" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="solarAutonomy">Autonomy (kWh)</label>
+                  <input type="number" id="solarAutonomy" name="powerSourceDetails.solar.autonomy" class="form-input" placeholder="e.g., 20" min="0" step="0.1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Other Power Source Details -->
+            <div id="otherDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Other Power Source Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="otherType">Type</label>
+                  <input type="text" id="otherType" name="powerSourceDetails.other.type" class="form-input" placeholder="e.g., Wind, Hydro">
+                </div>
+                <div class="form-group">
+                  <label for="otherCapacity">Capacity (kW)</label>
+                  <input type="number" id="otherCapacity" name="powerSourceDetails.other.capacity" class="form-input" placeholder="e.g., 10" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="otherDescription">Description</label>
+                  <input type="text" id="otherDescription" name="powerSourceDetails.other.description" class="form-input" placeholder="e.g., Wind turbine model">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="siteCapacity" class="form-label">Capacity</label>
+                <select id="siteCapacity" name="capacity" class="form-input">
+                  <option value="Low">Low</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="siteTags" class="form-label">Tags (comma separated)</label>
+                <input type="text" id="siteTags" name="tags" class="form-input" placeholder="e.g., urban, primary, wifi">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="siteInstallationDate" class="form-label">Installation Date</label>
+                <input type="date" id="siteInstallationDate" name="installationDate" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="siteLastMaintenance" class="form-label">Last Maintenance</label>
+                <input type="date" id="siteLastMaintenance" name="lastMaintenance" class="form-input">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="siteTechnicianName" class="form-label">Technician Name</label>
+                <input type="text" id="siteTechnicianName" name="technician.name" class="form-input" placeholder="Technician name">
+              </div>
+              <div class="form-group">
+                <label for="siteTechnicianPhone" class="form-label">Technician Phone</label>
+                <input type="tel" id="siteTechnicianPhone" name="technician.phone" class="form-input" placeholder="Technician phone">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="siteNotes" class="form-label">Notes</label>
+              <textarea id="siteNotes" name="notes" class="form-input" rows="3" placeholder="Additional notes about the site"></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+              <button type="submit" class="modal-btn submit" id="submitSiteBtn">
+                <span id="submitSiteBtnText">Register Site</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Site Modal -->
+    <div id="editSiteModal" class="modal-overlay" style="display:none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="editModalTitle" class="modal-title">Edit Site</h3>
+          <button id="editModalClose" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="editSiteForm" class="modal-form">
+            <input type="hidden" id="editSiteId" name="id">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editName" class="form-label">Site Name</label>
+                <input type="text" id="editName" name="name" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="editAddress" class="form-label">Address</label>
+                <input type="text" id="editAddress" name="address" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editLat" class="form-label">Latitude</label>
+                <input type="number" step="0.000001" id="editLat" name="location.lat" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="editLng" class="form-label">Longitude</label>
+                <input type="number" step="0.000001" id="editLng" name="location.lng" class="form-input" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editStatus" class="form-label">Status</label>
+                <select id="editStatus" name="status" class="form-input">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editHeight" class="form-label">Height (m)</label>
+                <input type="number" id="editHeight" name="height" class="form-input" min="0" step="0.1" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Power Sources</label>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Grid"> Grid
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Generator"> Generator
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Battery"> Battery
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Solar"> Solar
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" name="powerSources" value="Other"> Other
+                </label>
+              </div>
+            </div>
+
+            <!-- Grid Details -->
+            <div id="editGridDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Grid Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editGridConnectionType">Connection Type</label>
+                  <select id="editGridConnectionType" name="powerSourceDetails.grid.connectionType" class="form-input">
+                    <option value="">Select Connection Type</option>
+                    <option value="single_phase">Single-phase</option>
+                    <option value="three_phase">Three-phase</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="editGridVoltage">Voltage (V)</label>
+                  <input type="number" id="editGridVoltage" name="powerSourceDetails.grid.voltage" class="form-input" placeholder="e.g., 400" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editGridLoad">Load (kW)</label>
+                  <input type="number" id="editGridLoad" name="powerSourceDetails.grid.load" class="form-input" placeholder="e.g., 50" min="0" step="0.1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Generator Details -->
+            <div id="editGeneratorDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Generator Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editGeneratorType">Type</label>
+                  <select id="editGeneratorType" name="powerSourceDetails.generator.type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="perkins">Perkins</option>
+                    <option value="cummins">Cummins</option>
+                    <option value="cat">CAT</option>
+                    <option value="fgt">FGT</option>
+                    <option value="doosan">Doosan</option>
+                    <option value="mtu">MTU</option>
+                    <option value="volvo">Volvo</option>
+                    <option value="john_deere">John Deere</option>
+                    <option value="yanmar">Yanmar</option>
+                    <option value="kirloskar">Kirloskar</option>
+                    <option value="mitsubishi">Mitsubishi</option>
+                    <option value="honda">Honda</option>
+                    <option value="kohler">Kohler</option>
+                    <option value="mecc_alte">Mecc Alte</option>
+                    <option value="premec">Premec</option>
+                    <option value="niroc">Niroc</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="editGeneratorCapacity">Capacity (kVA)</label>
+                  <input type="number" id="editGeneratorCapacity" name="powerSourceDetails.generator.capacity" class="form-input" placeholder="e.g., 100" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editGeneratorLoad">Load (kW)</label>
+                  <input type="number" id="editGeneratorLoad" name="powerSourceDetails.generator.load" class="form-input" placeholder="e.g., 80" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editGeneratorAutonomy">Autonomy (hours)</label>
+                  <input type="number" id="editGeneratorAutonomy" name="powerSourceDetails.generator.autonomy" class="form-input" placeholder="e.g., 24" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editGeneratorFuelTank">Fuel Tank (litres)</label>
+                  <input type="number" id="editGeneratorFuelTank" name="powerSourceDetails.generator.fuelTank" class="form-input" placeholder="e.g., 500" min="0" step="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Battery Details -->
+            <div id="editBatteryDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Battery Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editBatteryType">Type</label>
+                  <select id="editBatteryType" name="powerSourceDetails.battery.type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="li_ion">Lithium-Ion</option>
+                    <option value="lead_acid">Lead-Acid</option>
+                    <option value="flow">Flow</option>
+                    <option value="lithium_iron">Lithium-Iron</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="editBatteryCapacity">Capacity (kWh)</label>
+                  <input type="number" id="editBatteryCapacity" name="powerSourceDetails.battery.capacity" class="form-input" placeholder="e.g., 50" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editBatteryVoltage">Voltage (V)</label>
+                  <input type="number" id="editBatteryVoltage" name="powerSourceDetails.battery.voltage" class="form-input" placeholder="e.g., 48" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editBatteryDepth">Depth of Discharge (%)</label>
+                  <input type="number" id="editBatteryDepth" name="powerSourceDetails.battery.depth" class="form-input" placeholder="e.g., 80" min="0" max="100" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editBatteryQuantity">Quantity (packs)</label>
+                  <input type="number" id="editBatteryQuantity" name="powerSourceDetails.battery.quantity" class="form-input" placeholder="e.g., 2" min="1" step="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Solar Details -->
+            <div id="editSolarDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Solar Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editSolarType">Type</label>
+                  <select id="editSolarType" name="powerSourceDetails.solar.type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="mono">Monocrystalline</option>
+                    <option value="poly">Polycrystalline</option>
+                    <option value="thin">Thin-Film</option>
+                    <option value="bifacial">Bifacial</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="editSolarCapacity">Capacity (kW)</label>
+                  <input type="number" id="editSolarCapacity" name="powerSourceDetails.solar.capacity" class="form-input" placeholder="e.g., 10" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editSolarTilt">Tilt (degrees)</label>
+                  <input type="number" id="editSolarTilt" name="powerSourceDetails.solar.tilt" class="form-input" placeholder="e.g., 30" min="0" max="90" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editSolarInverterSize">Inverter Size (kW)</label>
+                  <input type="number" id="editSolarInverterSize" name="powerSourceDetails.solar.inverterSize" class="form-input" placeholder="e.g., 8" min="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label for="editSolarAutonomy">Autonomy (kWh)</label>
+                  <input type="number" id="editSolarAutonomy" name="powerSourceDetails.solar.autonomy" class="form-input" placeholder="e.g., 20" min="0" step="0.1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Other Power Source Details -->
+            <div id="editOtherDetails" class="form-group power-source-details" style="display: none;">
+              <label class="form-label">Other Power Source Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editOtherType">Type</label>
+                  <input type="text" id="editOtherType" name="powerSourceDetails.other.type" class="form-input" placeholder="e.g., Wind, Hydro">
+                </div>
+                <div class="form-group">
+                  <label for="editOtherCapacity">Capacity (kW)</label>
+                  <input type="number" id="editOtherCapacity" name="powerSourceDetails.other.capacity" class="form-input" placeholder="e.g., 10" min="0" step="0.1">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editOtherDescription">Description</label>
+                  <input type="text" id="editOtherDescription" name="powerSourceDetails.other.description" class="form-input" placeholder="e.g., Wind turbine model">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editCapacity" class="form-label">Capacity</label>
+                <select id="editCapacity" name="capacity" class="form-input">
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editTags" class="form-label">Tags (comma separated)</label>
+                <input type="text" id="editTags" name="tags" class="form-input" placeholder="e.g., urban, primary, wifi">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editInstallationDate" class="form-label">Installation Date</label>
+                <input type="date" id="editInstallationDate" name="installationDate" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="editLastMaintenance" class="form-label">Last Maintenance</label>
+                <input type="date" id="editLastMaintenance" name="lastMaintenance" class="form-input">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editTechnicianName" class="form-label">Technician Name</label>
+                <input type="text" id="editTechnicianName" name="technician.name" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="editTechnicianPhone" class="form-label">Technician Phone</label>
+                <input type="tel" id="editTechnicianPhone" name="technician.phone" class="form-input">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="editNotes" class="form-label">Notes</label>
+              <textarea id="editNotes" name="notes" class="form-input" rows="3" placeholder="Additional notes about the site"></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="modal-btn cancel" onclick="closeEditModal()">Cancel</button>
+              <button type="submit" class="modal-btn submit" id="updateSiteBtn">
+                <span id="updateSiteBtnText">Update Site</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Compact Power Source Modal (power-only edits) -->
+    <div id="powerSourceModal" class="modal-overlay" style="display:none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="powerSourceModalTitle" class="modal-title">Edit Power Source</h3>
+          <button id="powerSourceModalClose" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="powerSourceForm" class="modal-form">
+            <input type="hidden" id="psSiteId" name="id">
+
+            <div id="psGridGroup" class="form-group power-source-details" style="display:none;">
+              <label class="form-label">Grid Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psGridConnectionType">Connection Type</label>
+                  <select id="psGridConnectionType" name="connectionType" class="form-input">
+                    <option value="">Select Connection Type</option>
+                    <option value="single_phase">Single-phase</option>
+                    <option value="three_phase">Three-phase</option>
+                  </select>
+                  <div class="field-error" id="err-psGridConnectionType"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psGridVoltage">Voltage (V)</label>
+                  <input type="number" id="psGridVoltage" name="voltage" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psGridVoltage"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psGridLoad">Load (kW)</label>
+                  <input type="number" id="psGridLoad" name="load" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psGridLoad"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="psGeneratorGroup" class="form-group power-source-details" style="display:none;">
+              <label class="form-label">Generator Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psGeneratorType">Type</label>
+                  <select id="psGeneratorType" name="type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="perkins">Perkins</option>
+                    <option value="cummins">Cummins</option>
+                    <option value="cat">CAT</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <div class="field-error" id="err-psGeneratorType"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psGeneratorCapacity">Capacity (kVA)</label>
+                  <input type="number" id="psGeneratorCapacity" name="capacity" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psGeneratorCapacity"></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psGeneratorLoad">Load (kW)</label>
+                  <input type="number" id="psGeneratorLoad" name="load" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psGeneratorLoad"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psGeneratorAutonomy">Autonomy (hours)</label>
+                  <input type="number" id="psGeneratorAutonomy" name="autonomy" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psGeneratorAutonomy"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psGeneratorFuelTank">Fuel Tank (litres)</label>
+                  <input type="number" id="psGeneratorFuelTank" name="fuelTank" class="form-input" min="0" step="1">
+                  <div class="field-error" id="err-psGeneratorFuelTank"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="psBatteryGroup" class="form-group power-source-details" style="display:none;">
+              <label class="form-label">Battery Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psBatteryType">Type</label>
+                  <select id="psBatteryType" name="type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="li_ion">Lithium-Ion</option>
+                    <option value="lead_acid">Lead-Acid</option>
+                  </select>
+                  <div class="field-error" id="err-psBatteryType"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psBatteryCapacity">Capacity (kWh)</label>
+                  <input type="number" id="psBatteryCapacity" name="capacity" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psBatteryCapacity"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="psSolarGroup" class="form-group power-source-details" style="display:none;">
+              <label class="form-label">Solar Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psSolarType">Type</label>
+                  <select id="psSolarType" name="type" class="form-input">
+                    <option value="">Select Type</option>
+                    <option value="mono">Monocrystalline</option>
+                    <option value="poly">Polycrystalline</option>
+                  </select>
+                  <div class="field-error" id="err-psSolarType"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psSolarCapacity">Capacity (kW)</label>
+                  <input type="number" id="psSolarCapacity" name="capacity" class="form-input" min="0" step="0.1">
+                  <div class="field-error" id="err-psSolarCapacity"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="psOtherGroup" class="form-group power-source-details" style="display:none;">
+              <label class="form-label">Other Details</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psOtherType">Type</label>
+                  <input type="text" id="psOtherType" name="type" class="form-input" placeholder="e.g., Wind, Hydro">
+                  <div class="field-error" id="err-psOtherType"></div>
+                </div>
+                <div class="form-group">
+                  <label for="psOtherCapacity">Capacity (kW)</label>
+                  <input type="number" id="psOtherCapacity" name="capacity" class="form-input" min="0" step="0.1" placeholder="e.g., 10">
+                  <div class="field-error" id="err-psOtherCapacity"></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="psOtherDescription">Description</label>
+                  <input type="text" id="psOtherDescription" name="description" class="form-input" placeholder="Optional: additional details">
+                  <div class="field-error" id="err-psOtherDescription"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="modal-btn cancel" onclick="closePowerSourceModal()">Cancel</button>
+              <button type="submit" class="modal-btn submit" id="psSubmitBtn"><span id="psSubmitBtnText">Save</span></button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/leaflet-providers@1.13.0/leaflet-providers.js"></script>
+    <script src="inde.js"></script>
+  </body>
+  </html>
