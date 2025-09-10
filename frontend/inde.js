@@ -2,7 +2,8 @@
 // dotenv cannot be used in browser code. Use `npm run gen-config` to generate
 // `config.js` from `frontend/.env`, or ensure `config.js` is served with the
 // correct BASE_URL.
-const API_BASE_URL = 'https://ethiotelecome.vercel.app/api';let authToken = null;
+const API_BASE_URL = 'https://ethiotelecome.vercel.app/api';
+let authToken = null;
 
 // App state variables
 let currentUser = null; // Stores the currently logged-in user
