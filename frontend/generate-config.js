@@ -3,7 +3,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const env = {
-  BASE_URL: process.env.BASE_URL || 'https://ethiotelecome.vercel.app/'
+  BASE_URL: process.env.BASE_URL || 'https://ethiotelecome.vercel.app/api'
 };
 const out = `(function(window){
   // Generated from frontend/.env by generate-config.js 
