@@ -4,7 +4,6 @@
 // correct BASE_URL.
 const API_BASE_URL = 'https://ethiotelecome.vercel.app/api';
 let authToken = null;
-
 // App state variables
 let currentUser = null; // Stores the currently logged-in user
 const sitesPerPage = 10; // Number of sites to display per page
